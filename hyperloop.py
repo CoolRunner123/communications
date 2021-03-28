@@ -1,9 +1,18 @@
+import serial
+import matplotlib.pyplot as plt
+import numpy as np
+from PyQt5 import QtWidgets, uic
+from pyqtgraph import PlotWidget, plot
+from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QHBoxLayout, QGridLayout, QLabel, QTableWidget
+import pyqtgraph as pga
+import os
 from PyQt5.QtWidgets import *
 import sys
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from pyqtgraph import PlotWidget, plot
 import pyqtgraph as pg
+
     
 class Color(QWidget):
     def __init__(self, color, *args, **kwargs):
@@ -242,30 +251,72 @@ class Tab(QTabWidget):
 # TODO: accommodate for different graphs in different tabs (axis labels, graph types, data sources)
 class Graph(QWidget):
     def __init__(self, parent = None):
+        
+        #ADDED FROM ARDUINO -----------------------------------
         super(Graph, self).__init__(parent)
-        self.layout = QGridLayout()
-        self.graphWidget = pg.PlotWidget()
-        # Sample data as array (neater demo)
-        second = [1,2,3,4,5,6,7,8,9,10]
-        temperature = [30,32,34,32,33,31,29,32,35,45]
-        # Sample data from a txt file
-	
-	# USE DATA FROM SERIAL INSTEAD
-        graph_data = open('sample_data.txt','r').read()
-        lines = graph_data.split('\n')
-        xs = []
-        ys = []
-        for line in lines:
-            if len(line) > 1:
-                x, y = line.split(',')
-                xs.append(float(x))
-                ys.append(float(y))
-        self.graphWidget.setBackground((224,224,224))
-        pen = pg.mkPen(width=10)
-        self.graphWidget.plot(second, temperature, pen=pen, symbol='x', symbolSize=30)
-        self.layout.addWidget(self.graphWidget)
-        self.setLayout(self.layout)
+        plt.ion()
+        fig = plt.figure()
 
+
+        i=0
+        x1 = list()
+        x2 = list()
+        x3 = list()
+        x4 = list()
+
+        y1 = list()
+        y2 = list()
+        y3 = list()
+        y4 = list()
+
+        i = 0
+        ser1 = serial.Serial('COM8', 9600, timeout=0)
+        ser2 = serial.Serial('COM9', 9600, timeout=0)
+        ser3 = serial.Serial('COM10', 9600, timeout=0)
+        ser4 = serial.Serial('COM11', 9600, timeout=0)
+
+        ser1.close()
+        ser2.close()
+        ser3.close()
+        ser4.close()
+        ser1.open()
+        ser2.open()
+        ser3.open()
+        ser4.open()
+
+        while True:
+
+            data1 = ser1.readline()
+            data2 = ser2.readline()
+            data3 = ser3.readline()
+            data4 = ser4.readline()
+
+             plt.subplot(411)
+             plt.plot(i, float(data1.decode()))
+
+             plt.subplot(412)
+             plt.plot(i, float(data2.decode()))
+
+             plt.subplot(413)
+             plt.plot(i, float(data3.decode()))
+
+             plt.subplot(414)
+             plt.plot(i, float(data4.decode()))
+
+             x1.append(i)
+             y1.append(data1.decode())
+             x2.append(i)
+             y2.append(data2.decode())
+             x3.append(i)
+             y3.append(data3.decode())
+             x4.append(i)
+             y4.append(data4.decode())
+
+             i += 1
+             plt.show()
+             plt.pause(0.0001)  # Note this correction
+        
+        # END OF ARDUINO ADDED CODE-------------------------------
 class EmergencyButton(QWidget):
     def __init__(self, parent = None):
         super(EmergencyButton, self).__init__(parent)
